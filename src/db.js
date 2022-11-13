@@ -5,12 +5,12 @@ const ClasifTema=require("./models/ClasifTema")
 const Usuario=require("./models/Usuarios")
 const Perfiles=require("./models/Perfiles")
 const Contenido= require("./models/Contenidos")
-require('dotenv').config();
+require("dotenv").config({ path: ".env" });
 
 const sequelize = new Sequelize(
     'knowledge-base-qwork',
     'root',
-    'musiLolo2022',
+    process.env.PASSWORD,
      {
        host: 'localhost',
        dialect: 'mysql'

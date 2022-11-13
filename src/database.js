@@ -23,9 +23,9 @@ const mysql = require('mysql')
 
 
 var conexion= mysql.createConnection({
-    host : 'localhost',
-    user : 'root',
-    password : 'musiLolo2022',
+    host : process.env.HOST,
+    user : process.env.USER,
+    password : process.env.PASSWORD,
 });
 
 
