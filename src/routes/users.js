@@ -64,8 +64,12 @@ router.post("/", async (req, res) => {
               idPerfiles,
               idEmpresas,
             });
+            console.log(U)
+ if(U)
+ {
+   res.status(200).json("Se creó correctamente!");
 
-             res.status(200).json("Se creó correctamente!");
+ }
 
    
           }
@@ -76,7 +80,7 @@ router.post("/", async (req, res) => {
           // }
 
     //   // user.password = await user.encryptPassword(user.password);
-  } catch (errors) {
+  } catch (error) {
     // if (errors.keyPattern.usuario) {
     //   res.status(400).send("Ya existe un Usuario igual!");
     // } else if (errors.keyPattern.email) {
@@ -90,7 +94,22 @@ router.post("/", async (req, res) => {
     // ) {
     //   res.status(400).send("El perfil no existe");
     // }
-    res.send(errors.error)
+    console.log(error.parent.sqlMessage)
+
+    if(error.parent.sqlMessage.includes("usuarios.usuar"))
+    {
+      res.status(400).send("Ya existe ese usuario")
+
+    }
+     if(error.parent.sqlMessage.includes("usuarios.email"))
+    {
+      res.status(400).send("Ya existe ese email")
+
+    }
+
+
+ 
+
   }
 });
 
@@ -106,29 +125,21 @@ router.get("/:id", async (req, res) => {
 router.get("/", async (req, res) => {
   let { search, estado, empresa } = req.query;
 
-  console.log({ search: search }, { estado: estado }, { empresa: empresa });
 
   try {
-    const user =await usuario.findAll({});
 
-    if (user) {
-      
-      res.json(user);
-    } else {
-      res.status(400).send("Usuario no encontrado");
-    }
+
+    let users = await usuario.findAll({})
     if (search !== undefined && estado !== undefined && empresa !== undefined) {
-      let users = await usuario.findAll({})
       if (search.length > 0) {
         users = users.filter((r) =>
-          r.fullName.toLowerCase().includes(search.toLowerCase())
+          r.dataValues.fullname.toLowerCase().includes(search.toLowerCase())
         );
-
         if (estado.length > 0) {
           if (estado == "Activos") {
-            users = users.filter((e) => e.active == true);
+            users = users.filter((e) => e.dataValues.active == true);
           } else {
-            users = users.filter((e) => e.active == false);
+            users = users.filter((e) => e.dataValues.active == false);
           }
         }
         if (empresa.length > 0) {
@@ -140,21 +151,21 @@ router.get("/", async (req, res) => {
             users = users;
           } else {
             users = users.filter((e) =>
-              e.idEmpresa.find((e) => e.includes(empresa))
+              e.dataValues.idEmpresas.find((e) => e.includes(empresa))
             );
           }
         }
       } else if (estado.length > 0) {
         if (estado == "Activos") {
-          users = users.filter((e) => e.active == true);
+          users = users.filter((e) => e.dataValues.active == true);
         } else {
-          users = users.filter((e) => e.active == false);
+          users = users.filter((e) => e.dataValues.active == false);
         }
         if (empresa == "Ningunos" || empresa == "" || empresa == "undefined") {
           users = users;
         } else {
           users = users.filter((e) =>
-            e.idEmpresa.find((e) => e.includes(empresa))
+            e.dataValues.idEmpresas.find((e) => e.includes(empresa))
           );
         }
       } else if (empresa.length > 0) {
@@ -162,7 +173,7 @@ router.get("/", async (req, res) => {
           users = users;
         } else {
           users = users.filter((e) =>
-            e.idEmpresa.find((e) => e.includes(empresa))
+            e.dataValues.idEmpresas.find((e) => e.includes(empresa))
           );
         }
       }

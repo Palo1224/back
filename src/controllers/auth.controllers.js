@@ -7,45 +7,68 @@ router.get("/logout", (req, res) => {
   req.logout();
 });
 router.post("/signin", async (req, res) => {
-  const { email } = req.body;
+  const { email ,password} = req.body;
 
   try {
 
     const user = await usuario.findOne( {where:{ email }})
 
-      if(!user)
-      {
-          res.status(400).send("Este email no existe");
-        
-      }else 
-      {
-
-
-
-        bcrypt.compare(req.body.password, user.password, function(err, res) {
+     
+  
       
-          if (res) {
-            // Send JWT
+          if(!user)
+          {
+            res.status(400).send("Este email no existe");
+            
+          }else 
+          {
+              const value=user.dataValues?.password;
+              
+              const probando=await bcrypt.compare(password, value)
+          
+              if(probando)
+              {
+                res.status(200).json(user)
+                 
+                
+              }
+              else{
+                if(user?.dataValues?.active==false)
+                {
+                  res.status(400).send("La cuenta no está activa")
+        
+                } else{
+                  
+                 res.status(400).json("Contraseña incorrecta!  ");
+                 }        
+      
+              }
+            }
+
+        // bcrypt.compare(req.body.password, user.dataValues.password, function(err, re) {
+      
+        //   if (re) {
+        //     // Send JWT
           
             
-            if (user && res) {
-              // const token = jwt.sign({ id: user._id }, config.secret);
+        //     if (user && re) {
+        //       // const token = jwt.sign({ id: user._id }, config.secret);
       
-              res.json(user);
-            }
-          } else {
-            if(user?.dataValues?.active==false)
-            {
-              res.status(400).send("La cuenta no está activa")
+        //       res.json(user);
+        //     }
+        //   } else {
+        //     if(user?.dataValues?.active==false)
+        //     {
+        //       res.status(400).send("La cuenta no está activa")
     
-            }
-            else{
+        //     }
+        //     else{
 
-              return response.json({success: false, message: 'passwords do not match'});
-            }
-            // response is OutgoingMessage object that server response http request
-          }
-        });
+        //       return response.json({success: false, message: 'passwords do not match'});
+        //     }
+        //     // response is OutgoingMessage object that server response http request
+        //   }
+        //});
       //   const passwordValidate = await user.validatePassword(req.body.password);
       //   if(user.active==false)
       //   {
@@ -60,7 +83,7 @@ router.post("/signin", async (req, res) => {
   
       //     res.json(user);
       //   }
-      }
+      
 
         
   } catch (error) {
@@ -172,7 +195,6 @@ router.post("/signin/redactor", async (req, res) => {
 exports.uploadImage=function(req,res){
   var base64string= req.body.image;
   let base64Image=base64string.split(";base64,").pop()
-  console.log(base64Image)
 
 }
 module.exports = router;

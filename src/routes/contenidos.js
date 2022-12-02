@@ -1,7 +1,6 @@
 const { Router } = require("express");
 // const { createFields } = require("mongoose-fuzzy-searching/helpers");
 const {contenido,usuario} = require("../db");
-const Usuarios = require("../models/Usuarios");
 const router = Router();
 // const fileupload=require("express-fileupload")
 router.post("/", async (req, res) => {
@@ -107,38 +106,34 @@ router.post("/", async (req, res) => {
 });
 router.get("/", async (req, res) => {
   const { search, id, ref ,empresa} = req.query;
-
-  try {
+  
+  try {  
     if (id) {
-      const user = await usuario.findOne({ where:{id}})
+      const user = await usuario.findOne( {where:{ id }})
+      if (user.dataValues.idPerfiles == "Administrador") {
 
-      if (user.idPerfiles == "Administrador") {
         if (!search) {
           const contenidos = await contenido.findAll({})
-
-
-          let refe = contenidos.filter((e) => e.referencia == ref);
+        
+          let refe = contenidos.filter((e) => e.dataValues.referencia == ref);
  
           if (refe && ref !== undefined) {
             res.send(refe);
           } else {
             if (empresa!==undefined) {
-        
-              if(empresa.toString()=="Ningunos")
+
+              if(empresa=="Ningunos")
               {
                 res.send(contenidos);
               } else {
                 let empre= contenidos.filter((e) =>
-                  e.idEmpresa.find((e) => e.DescripEmpresa.includes(empresa))
+                  e.dataValues.idEmpresas.find((e) => e.includes(empresa))
                 );
                 if(empre.length>0)
                 {
                   res.send(empre)
                 }
-                else 
-                {
-                  res.send()
-                }
+        
               }
             }
             else 
@@ -148,12 +143,11 @@ router.get("/", async (req, res) => {
             }
           }
         } else {
-          const contenidos = await contenidos.findAll({})
-
+          const contenidos = await contenido.findAll({})
           const temasbuscados = contenidos.filter(
             (r) =>
-              r.tituloTema.toLowerCase().includes(search.toLowerCase()) ||
-              r.DescripTema.toLowerCase().includes(search.toLowerCase())
+              r.dataValues.tituloTema.toLowerCase().includes(search.toLowerCase()) ||
+              r.dataValues.DescripTema.toLowerCase().includes(search.toLowerCase())
           );
           if (temasbuscados.length > 0) {
             res.send(temasbuscados);
@@ -166,54 +160,57 @@ router.get("/", async (req, res) => {
           const contenidos = await contenido.findAll({})
 
           const temas = contenidos.filter((e) =>
-            e.idPerfiles.find(
-              (e) =>
-                e == "Invitado" ||
-                e == user.idPerfiles
+            e.dataValues.idPerfiles.find(
+              (a) =>
+                a == "Invitado" ||
+                a == user.dataValues.idPerfiles
             )
           );
+          
           const filtrado = [];
           temas.filter((e) =>
-            e.idSistemas.forEach((element) => {
-              user.idSistemas.forEach((element1) => {
-                if ( element=="Todos" ||  element1 == element ) {
-                  if (!filtrado.find((a) => a.id == e.id)) {
+            e.dataValues.idSistemas.forEach((element) => {
+              user.dataValues.idSistemas.forEach((element1) => {
+                if ( element=="Todos" ||  element1 == element  ) {
+                   if(!filtrado.length)
+                  {
                     filtrado.push(e);
-                  } else if (filtrado.length == 0) {
+
+                  }
+                  if (!filtrado.find((a) => a == e)) {
                     filtrado.push(e);
                   }
+             
                 }
               });
             })
           );
-          let refe = filtrado.filter((e) => e.referencia == ref);
+          let refe = filtrado.filter((e) => e.dataValues.referencia == ref);
           if (refe && ref !== undefined) {
             res.send(refe);
           } else {
             if (empresa!==undefined) {
-          
-             if(empresa.toString()=="Ningunos")
+
+             if(empresa=="Ningunos")
               {
                 res.send(filtrado);
 
-              }else {
+              }
+              else {
                 let empre= contenidos.filter((e) =>
-                  e.idEmpresa.find((e) => e.includes(empresa))
+                  e.dataValues.idEmpresas.find((e) => e.includes(empresa))
                 );
                 if(empre.length>0)
                 {
                   res.send(empre)
                 }
-                else 
-                {
-                  res.send()
-                }
+           
               }
             }
             else 
             {
 
-              res.send(filtrado);
+              res.send(filtrado)
             }
           }
         } else {
@@ -221,30 +218,34 @@ router.get("/", async (req, res) => {
           const contenidos = await contenido.findAll({})
 
           const temas = contenidos.filter((e) =>
-            e.idPerfiles.find(
-              (e) =>
-                e == "Invitado" ||
-                e == user.idPerfiles
+            e.dataValues.idPerfiles.find(
+              (a) =>
+                a == "Invitado" ||
+                a == user.dataValues.idPerfiles
             )
           );
           const filtrado = [];
           temas.filter((e) =>
-            e.idSistemas.forEach((element) => {
-              user.idSistemas.forEach((element1) => {
+            e.dataValues.idSistemas.forEach((element) => {
+              user.dataValues.idSistemas.forEach((element1) => {
                 if (element=="Todos" ||  element1 == element ) {
-                  if (!filtrado.find((a) => a.id == e.id)) {
+                  if(!filtrado.length)
+                  {
                     filtrado.push(e);
-                  } else if (filtrado.length == 0) {
+
+                  }
+                  if (!filtrado.find((a) => a == e)) {
                     filtrado.push(e);
                   }
+             
                 }
               });
             })
           );
           const temasbuscados = filtrado.filter(
             (r) =>
-              r.tituloTema.toLowerCase().includes(search.toLowerCase()) ||
-              r.DescripTema.toLowerCase().includes(search.toLowerCase())
+              r.dataValues.tituloTema.toLowerCase().includes(search.toLowerCase()) ||
+              r.dataValues.DescripTema.toLowerCase().includes(search.toLowerCase())
           );
 
           if (temasbuscados.length > 0) {
@@ -259,30 +260,31 @@ router.get("/", async (req, res) => {
         const contenidos = await contenido.findAll({})
 
         const encontrado = contenidos.filter((e) =>
-          e.idPerfiles.find((e) => e == "Invitado")
+          e.dataValues.idPerfiles.find((e) => e == "Invitado")
         );
-        let refe = encontrado.filter((e) => e.referencia == ref);
+        let refe = encontrado.filter((e) => e.dataValues.referencia == ref);
         if (refe && ref !== undefined) {
           res.send(refe);
         }else {
           if (empresa!==undefined) {
- 
-           if(empresa.toString()=="Ningunos")
+
+           if(empresa=="Ningunos")
             {
               res.send(encontrado);
 
             } else {
-              let empre= contenidos.filter((e) =>
-                e.idEmpresa.find((e) => e.includes(empresa))
+              let empre= encontrado.filter((e) =>
+                e.dataValues.idEmpresas.find((e) => e.includes(empresa))
               );
               if(empre.length>0)
               {
                 res.send(empre)
               }
-              else 
+              else
               {
-                res.send()
+                res.send("No se encuentra nada")
               }
+      
             }
           }
           else 
@@ -295,13 +297,13 @@ router.get("/", async (req, res) => {
         const contenidos = await contenido.findAll({})
         
         const encontrado = contenidos.filter((e) =>
-          e.idPerfiles.find((e) => e == "Invitado")
+          e.dataValues.idPerfiles.find((e) => e == "Invitado")
         );
 
         const temasbuscados = encontrado.filter(
           (r) =>
-            r.tituloTema.toLowerCase().includes(search.toLowerCase()) ||
-            r.DescripTema.toLowerCase().includes(search.toLowerCase())
+            r.dataValues.tituloTema.toLowerCase().includes(search.toLowerCase()) ||
+            r.dataValues.DescripTema.toLowerCase().includes(search.toLowerCase())
         );
         if (temasbuscados.length > 0) {
           res.send(temasbuscados);
@@ -329,6 +331,7 @@ router.get("/:id", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
+ 
     const { id } = req.params;
     const {
       tituloTema,
@@ -340,10 +343,10 @@ router.put("/:id", async (req, res) => {
       author,
       FileReferencia,
       url,
-      idEmpresa,
+      idEmpresas
     } = req.body;
 
-    const contenidos = await contenido.findOne({where:{id} });
+    // const contenidos = await contenido.findOne({where:{id} });
     await contenido.update( {
       tituloTema,
       DescripTema,
@@ -354,7 +357,7 @@ router.put("/:id", async (req, res) => {
       author,
       FileReferencia,
       url,
-      idEmpresa,
+      idEmpresas,
     },{where:{id}});
 
     res.status(200).json();
