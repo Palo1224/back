@@ -41,20 +41,20 @@ router.post("/", async (req, res) => {
     array.pop();
     let array3 = array2[1].split(":");
     array = array.concat(array2);
-    if(array3[0]==00)
+    if(array3[0]=="00")
     {
         array[3] = (21).toString() + ":" + array3[1];
     }
-    else if(array3[0]==01)
+    else if(array3[0]=="01")
     {
         array[3] = (22).toString() + ":" + array3[1];
         
-    }else if(array3[0]==02)
+    }else if(array3[0]=="02")
     {
         array[3] = (23).toString() + ":" + array3[1];
     
     }
-    else if(array3[0]==03)
+    else if(array3[0]=="03")
     {
         array[3] = "00" + ":" + array3[1];
     
@@ -373,7 +373,7 @@ router.delete("/:id", async (req, res) => {
 
     res.status(200).send("Se borró correctamente!");
   } catch (error) {
-    console.log(error);
+    (error);
   }
 });
 
